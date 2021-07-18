@@ -2,7 +2,7 @@
 // https://aboutreact.com/example-of-sqlite-database-in-react-native
 
 import React, {useEffect, useRef, useState} from 'react';
-import {SafeAreaView, View} from 'react-native';
+import {SafeAreaView, View, Alert} from 'react-native';
 import {openDatabase} from 'react-native-sqlite-storage';
 import Button from '../components/button/Button';
 import MediaSelectionAlertDialog from '../components/MediaSelectionAlertDialog';
@@ -11,6 +11,7 @@ import TextField from '../components/textField/TextField';
 import Images from '../constants/Images';
 import {Strings} from '../constants/Strings';
 import Validation from '../constants/Validation';
+import NavigationService from '../navigation/NavigationService';
 import {pickSingle, pickSingleWithCamera} from '../utils/Util';
 import {isUserEmail, isUserName, isUserNumber} from './../utils/Validate';
 
@@ -27,18 +28,20 @@ const mediaArray = [
     checked: false,
   },
 ];
-const HomeScreen = ({navigation}) => {
-  let [email, setEmail] = useState(__DEV__ ? 'customer@gmail.com' : '');
+const HomeScreen = ({props, navigation}) => {
+  let [email, setEmail] = useState('');
   let [isEmail, setIsEmail] = useState('');
-  let [firstName, setFirstName] = useState(__DEV__ ? 'John' : '');
+  let [firstName, setFirstName] = useState('');
   let [isFirstName, setIsFirstName] = useState('');
-  let [lastName, setLastName] = useState(__DEV__ ? 'Billings' : '');
+  let [lastName, setLastName] = useState('');
   let [isLastName, setIsLastName] = useState('');
-  let [mobile, setMobile] = useState(__DEV__ ? '9988774455' : '');
+  let [mobile, setMobile] = useState('');
   let [isMobile, setIsMobile] = useState('');
   let [isDialogVisible, setDialogVisible] = useState(false);
 
+  let [inputUserId, setInputUserId] = useState('');
   let [imageUrl, setImageUrl] = useState('');
+  let [category, setCategory] = useState('');
   const mEmailRef = useRef();
   const mFirstnameRef = useRef();
   const mLastNameRef = useRef();
@@ -53,14 +56,25 @@ const HomeScreen = ({navigation}) => {
           if (res.rows.length == 0) {
             txn.executeSql('DROP TABLE IF EXISTS table_user', []);
             txn.executeSql(
-              'CREATE TABLE IF NOT EXISTS table_user(user_id INTEGER PRIMARY KEY AUTOINCREMENT, user_name VARCHAR(20), user_contact INT(10), user_address VARCHAR(255))',
+              'CREATE TABLE IF NOT EXISTS table_user(user_id INTEGER PRIMARY KEY AUTOINCREMENT, user_first_name VARCHAR(20), user_last_name VARCHAR(20), user_contact INT(10), user_address VARCHAR(255),imagem BLOB)',
               [],
             );
           }
         },
       );
+      Alert.alert('SQLite Database and Table Successfully Created...');
     });
   }, []);
+
+  const onUserDetail = data => {
+    setEmail(data.user_address);
+    setFirstName(data.user_first_name);
+    setLastName(data.user_last_name);
+    setMobile(`${data.user_contact}`);
+
+    setImageUrl(data.imagem);
+    setInputUserId(data.user_id);
+  };
   const onChangeTextEmail = text => {
     let [isValid, email] = isUserEmail(text);
     setEmail(email);
@@ -113,21 +127,100 @@ const HomeScreen = ({navigation}) => {
       setImageUrl('');
     }
   };
+  const updateContact = () => {
+    db.transaction(tx => {
+      tx.executeSql(
+        'UPDATE table_user set user_first_name=?, user_last_name=?,user_contact=? , user_address=?,imagem=? where user_id=?',
+        [firstName, lastName, mobile, email, imageUrl, inputUserId],
+        (tx, results) => {
+          console.log('Results', results.rowsAffected);
+          if (results.rowsAffected > 0) {
+            Alert.alert(
+              'Success',
+              'User updated successfully',
+              [
+                {
+                  text: 'Ok',
+                  onPress: () =>
+                    NavigationService.navigate('ContactList', {
+                      onUserDetail: onUserDetail,
+                    }),
+                },
+              ],
+              {cancelable: false},
+            );
+          } else alert('Updation Failed');
+        },
+      );
+    });
+  };
+  const addContact = () => {
+    db.transaction(function (tx) {
+      tx.executeSql(
+        'INSERT INTO table_user (user_first_name,user_last_name, user_contact, user_address,imagem) VALUES (?,?,?,?,?)',
+        [firstName, lastName, mobile, email, imageUrl],
+        (tx, results) => {
+          console.log('Results', results.rowsAffected);
+          if (results.rowsAffected > 0) {
+            Alert.alert(
+              'Success',
+              'You are Registered Successfully',
+              [
+                {
+                  text: 'Ok',
+                  onPress: () =>
+                    NavigationService.navigate('ContactList', {
+                      onUserDetail: onUserDetail,
+                    }),
+                },
+              ],
+              {cancelable: false},
+            );
+          } else alert('Registration Failed');
+        },
+      );
+    });
+  };
+  const onPressAddContact = () => {
+    if (
+      email === '' ||
+      firstName === '' ||
+      lastName === '' ||
+      mobile === '' ||
+      isEmail !== '' ||
+      isFirstName !== '' ||
+      isLastName !== '' ||
+      isMobile !== ''
+    ) {
+      setIsEmail(email === '' ? Validations.validEmail : isEmail);
+      setIsFirstName(firstName === '' ? Validations.validName : isFirstName);
+      setIsLastName(lastName === '' ? Validations.validName : isLastName);
+      setIsMobile(mobile === '' ? Validations.validMobileNumber : isMobile);
+    } else {
+      if (inputUserId) {
+        updateContact();
+      } else {
+        addContact();
+      }
+    }
+  };
   const _renderEditProfile = () => {
     return (
-      <RoundShapeImage
-        size={80}
-        onPress={_onPressEditProfile}
-        editIcon={true}
-        source={
-          imageUrl
-            ? {
-                uri: imageUrl,
-              }
-            : Images.profile
-        }
-        defaultSource={Images.profile}
-      />
+      <View style={{marginBottom: 30}}>
+        <RoundShapeImage
+          size={80}
+          onPress={_onPressEditProfile}
+          editIcon={true}
+          source={
+            imageUrl
+              ? {
+                  uri: imageUrl,
+                }
+              : Images.profile
+          }
+          defaultSource={Images.profile}
+        />
+      </View>
     );
   };
   return (
@@ -190,12 +283,14 @@ const HomeScreen = ({navigation}) => {
 
             // editable={isSocialSignUpType && email ? false : true}
           />
-          <Button
-            onPress={() => {
-              alert(2);
-            }}
-            buttonText={Strings.save}
-          />
+          <View
+            style={{
+              justifyContent: 'center',
+              marginTop: 30,
+              flexDirection: 'row',
+            }}>
+            <Button onPress={onPressAddContact} buttonText={Strings.save} />
+          </View>
         </View>
       </View>
       <MediaSelectionAlertDialog

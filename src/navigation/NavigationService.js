@@ -1,18 +1,14 @@
-import * as React from 'react';
 import {CommonActions, StackActions} from '@react-navigation/native';
 
-export const navigationRef = React.createRef();
-export const isMountedRef = React.createRef();
-let navigation = navigationRef.current;
+let navigation;
+
 function setTopLevelNavigator(navigatorRef) {
   navigation = navigatorRef;
 }
 
 function navigate(name, params) {
-  if (isMountedRef.current && navigationRef.current) {
-    // Perform navigation if the app has mounted
-
-    navigationRef.current?.dispatch(
+  if (navigation) {
+    navigation?.dispatch(
       CommonActions.navigate({
         name,
         params,
@@ -21,52 +17,48 @@ function navigate(name, params) {
   }
 }
 
-const navigateToClearStack = state => {
-  if (isMountedRef.current && navigationRef.current) {
-    navigationRef.current?.dispatch(
-      CommonActions.reset({
-        index: 0,
-        routes: [{name: state}],
-      }),
-    );
+const pop = count => {
+  const popAction = StackActions.pop(count);
+  if (navigation) {
+    navigation?.dispatch(popAction);
   }
 };
 
-const navigateToStack = state => {
-  const routes = state;
-  if (isMountedRef.current && navigationRef.current) {
-    navigationRef.current?.dispatch(
-      CommonActions.reset({
-        index: routes.length - 1,
-        routes,
-      }),
-    );
-  }
-};
-const popFromStack = count => {
-  const popAction = StackActions.pop(count);
-  if (isMountedRef.current && navigationRef.current) {
-    navigationRef.current?.dispatch(popAction);
-  }
-};
-const pushToStack = (name, params) => {
-  if (isMountedRef.current && navigationRef.current) {
-    navigationRef.current?.dispatch(StackActions.push(name, params));
+const push = (name, params) => {
+  if (navigation) {
+    navigation?.dispatch(StackActions.push(name, params));
   }
 };
 
 function goBack() {
-  if (isMountedRef.current && navigationRef.current) {
-    navigationRef.current?.dispatch(CommonActions.goBack());
+  if (navigation) {
+    navigation?.dispatch(CommonActions.goBack());
   }
 }
+// Add screen in background of current screen
+function addScreenBeforeLast(routeName) {
+  navigation.dispatch(insertBeforeLast(routeName));
+}
+
+const insertBeforeLast = (routeName, params) => state => {
+  const routes = [
+    ...state.routes.slice(0, -1),
+    {name: routeName, params},
+    state.routes[state.routes.length - 1],
+  ];
+
+  return CommonActions.reset({
+    ...state,
+    routes,
+    index: routes.length - 1,
+  });
+};
 
 export default {
   navigate,
   setTopLevelNavigator,
-  navigateToClearStack,
   goBack,
-  navigateToStack,
-  popFromStack,
-  pushToStack,
+  pop,
+  push,
+  addScreenBeforeLast,
 };

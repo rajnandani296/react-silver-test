@@ -32,8 +32,8 @@ function RoundShape(props) {
 
   const Wrapper = editIcon ? TouchableWithoutFeedback : View;
   return (
-    <Wrapper style={{alignSelf: 'center'}} onPress={onPress}>
-      <Image {...props} source={source} π style={[container, style]}></Image>
+    <Wrapper onPress={onPress}>
+      <Image {...props} source={source} style={[container, style]}></Image>
     </Wrapper>
   );
 }
