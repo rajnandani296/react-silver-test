@@ -48,13 +48,7 @@ export default Constants = {
   DATE_TIME_OLDER_FORMAT: 'DD MMM, YYYY hh:mm A',
   DATE_FORMAT: 'YYYY-MM-DD',
   RIGHT_MENU: 'RIGHT_MENU',
-};
-
-export const Validations = {
-  validEmail: 'Email is required.',
-  validMobileFormat: 'Please enter a valid mobile number',
-  validEmailMobile: 'Please enter mobile number/employee Id',
-  validEmailFormat: 'Enter valid email.',
+  HOME_TOOL: 'HOME_TOOL',
 };
 
 export const appVersion = '1.0';

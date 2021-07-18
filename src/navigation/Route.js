@@ -10,9 +10,20 @@ import HomeScreen from '../containers/Home';
 import NavigationService, {
   navigationRef,
 } from '../navigation/NavigationService';
-
+import {createDrawerNavigator} from '@react-navigation/drawer';
+import DrawerContent from '../containers/DrawerContent';
 const Stack = createStackNavigator();
 
+const Drawer = createDrawerNavigator();
+const MainDrawer = () => {
+  return (
+    <Drawer.Navigator drawerContent={props => <DrawerContent {...props} />}>
+      <Drawer.Screen name="AddCategory" component={AddCategory} />
+      <Drawer.Screen name="HomeScreen" component={HomeScreen} />
+      <Drawer.Screen name="ContactList" component={ContactList} />
+    </Drawer.Navigator>
+  );
+};
 const Route = () => {
   return (
     <NavigationContainer
@@ -20,9 +31,8 @@ const Route = () => {
         NavigationService.setTopLevelNavigator(navigatorRef);
       }}
       initialRouteName="AddCategory">
-      <Stack.Navigator headerMode="none">
-        <Stack.Screen name="AddCategory" component={AddCategory} />
-        <Stack.Screen name="HomeScreen" component={HomeScreen} />
+      <Stack.Navigator screenOptions={{headerShown: false}}>
+        <Stack.Screen name="MainDrawer" component={MainDrawer} />
       </Stack.Navigator>
     </NavigationContainer>
   );

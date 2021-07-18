@@ -129,7 +129,7 @@ export function isUserName(text) {
     return [isValid, user];
   }
 }
-export function isCategoryName(text) {
+export function isCategoryNameValid(text) {
   if (text === '') {
     let isValid = Validation.validCategoryName;
     let user = text;

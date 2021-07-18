@@ -10,4 +10,7 @@ export const Strings = {
   okay: 'Ok',
   addCategory: 'Add Category',
   somethingWentWrong: 'Something went wrong',
+  createAndStoreCategory: 'Create and store category',
+  addContact: 'Add Contact',
+  contactList: 'ContactList',
 };

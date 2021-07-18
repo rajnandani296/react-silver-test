@@ -8,6 +8,7 @@ import Button from '../components/button/Button';
 import MediaSelectionAlertDialog from '../components/MediaSelectionAlertDialog';
 import RoundShapeImage from '../components/RoundShapeImage';
 import TextField from '../components/textField/TextField';
+import Toolbar from '../components/Toolbar';
 import Images from '../constants/Images';
 import {Strings} from '../constants/Strings';
 import Validation from '../constants/Validation';
@@ -67,7 +68,6 @@ const HomeScreen = ({props, navigation}) => {
           }
         },
       );
-      Alert.alert('SQLite Database and Table Successfully Created...');
     });
   }, []);
 
@@ -146,10 +146,13 @@ const HomeScreen = ({props, navigation}) => {
               [
                 {
                   text: 'Ok',
-                  onPress: () =>
+                  onPress: () => {
+                    resetContact();
+
                     NavigationService.navigate('ContactList', {
                       onUserDetail: onUserDetail,
-                    }),
+                    });
+                  },
                 },
               ],
               {cancelable: false},
@@ -158,6 +161,15 @@ const HomeScreen = ({props, navigation}) => {
         },
       );
     });
+  };
+  const resetContact = () => {
+    setEmail('');
+    setFirstName('');
+    setLastName('');
+    setMobile(``);
+
+    setImageUrl('');
+    setInputUserId('');
   };
   const addContact = () => {
     db.transaction(function (tx) {
@@ -173,10 +185,12 @@ const HomeScreen = ({props, navigation}) => {
               [
                 {
                   text: 'Ok',
-                  onPress: () =>
+                  onPress: () => {
+                    resetContact();
                     NavigationService.navigate('ContactList', {
                       onUserDetail: onUserDetail,
-                    }),
+                    });
+                  },
                 },
               ],
               {cancelable: false},
@@ -210,6 +224,12 @@ const HomeScreen = ({props, navigation}) => {
       }
     }
   };
+  const toggleDrawer = () => {
+    //Props to open/close the drawer
+
+    navigation.toggleDrawer();
+  };
+
   const _renderEditProfile = () => {
     return (
       <View style={{marginBottom: 30}}>
@@ -231,6 +251,7 @@ const HomeScreen = ({props, navigation}) => {
   };
   return (
     <SafeAreaView style={{flex: 1}}>
+      <Toolbar goToBack={toggleDrawer} leftTextName={Strings.addContact} />
       <View style={{flex: 1, backgroundColor: 'white'}}>
         <View style={{flex: 1, padding: 20}}>
           {_renderEditProfile()}

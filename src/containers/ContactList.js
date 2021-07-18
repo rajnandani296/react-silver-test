@@ -9,6 +9,7 @@ import {
   Alert,
 } from 'react-native';
 import {openDatabase} from 'react-native-sqlite-storage';
+import Toolbar from '../components/Toolbar';
 import Colors from '../constants/Colors';
 import Images from '../constants/Images';
 import {Strings} from '../constants/Strings';
@@ -22,10 +23,20 @@ const ContactList = ({navigation, route}) => {
   useEffect(() => {
     getUserList();
   }, []);
+
+  React.useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      getUserList();
+    });
+
+    // Return the function to unsubscribe from the event so it gets removed on unmount
+    return unsubscribe;
+  }, [navigation]);
   const getUserList = () => {
     db.transaction(tx => {
       tx.executeSql('SELECT * FROM table_user', [], (tx, results) => {
         var temp = [];
+
         for (let i = 0; i < results.rows.length; ++i)
           temp.push(results.rows.item(i));
         setFlatListItems(temp);
@@ -60,17 +71,7 @@ const ContactList = ({navigation, route}) => {
         (tx, results) => {
           console.log('Results', results.rowsAffected);
           if (results.rowsAffected > 0) {
-            Alert.alert(
-              'Success',
-              'User deleted successfully',
-              [
-                {
-                  text: 'Ok',
-                  onPress: () => getUserList(),
-                },
-              ],
-              {cancelable: false},
-            );
+            getUserList();
           } else {
             alert(Strings.somethingWentWrong);
           }
@@ -90,6 +91,11 @@ const ContactList = ({navigation, route}) => {
       ],
       {cancelable: false},
     );
+  };
+  const toggleDrawer = () => {
+    //Props to open/close the drawer
+
+    navigation.toggleDrawer();
   };
   let listViewItemSeparator = () => {
     return (
@@ -155,6 +161,11 @@ const ContactList = ({navigation, route}) => {
   return (
     <SafeAreaView style={{flex: 1}}>
       <View style={{flex: 1, backgroundColor: 'white'}}>
+        <Toolbar
+          goToBack={toggleDrawer}
+          showSearch={true}
+          leftTextName={Strings.contactList}
+        />
         <View style={{flex: 1}}>
           <FlatList
             data={flatListItems}

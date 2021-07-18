@@ -18,11 +18,12 @@ import TextField from '../components/textField/TextField';
 
 import {Strings} from '../constants/Strings';
 import NavigationService from '../navigation/NavigationService';
-import {isUserName} from './../utils/Validate';
-
+import {isCategoryNameValid} from './../utils/Validate';
+import Toolbar from '../components/Toolbar';
 import Validation from '../constants/Validation';
 import Images from '../constants/Images';
 import Colors from '../constants/Colors';
+import Constants from '../constants/Constants';
 var db = openDatabase({name: 'UserDatabase.db'});
 
 const AddCategory = ({props, navigation}) => {
@@ -68,7 +69,7 @@ const AddCategory = ({props, navigation}) => {
   };
 
   const onChangeCategoryName = text => {
-    let [isValid, categoryName] = isCategoryName(text);
+    let [isValid, categoryName] = isCategoryNameValid(text);
     setCategoryName(categoryName);
     setIsCategoryName(isValid);
   };
@@ -131,17 +132,8 @@ const AddCategory = ({props, navigation}) => {
         (tx, results) => {
           console.log('Results', results.rowsAffected);
           if (results.rowsAffected > 0) {
-            Alert.alert(
-              'Success',
-              'Category deleted successfully',
-              [
-                {
-                  text: 'Ok',
-                  onPress: () => getCategoryList(),
-                },
-              ],
-              {cancelable: false},
-            );
+            setInputUserId('');
+            getCategoryList();
           } else {
             alert(Strings.somethingWentWrong);
           }
@@ -176,6 +168,15 @@ const AddCategory = ({props, navigation}) => {
       }
     }
   };
+  const goBack = () => {
+    NavigationService.goBack();
+  };
+  const toggleDrawer = () => {
+    //Props to open/close the drawer
+
+    navigation.toggleDrawer();
+  };
+
   let listViewItemSeparator = () => {
     return (
       <View
@@ -219,6 +220,11 @@ const AddCategory = ({props, navigation}) => {
   };
   return (
     <SafeAreaView style={{flex: 1}}>
+      <Toolbar
+        navigationName={Constants.HOME_TOOL}
+        goToBack={toggleDrawer}
+        leftTextName={Strings.createAndStoreCategory}
+      />
       <View style={{flex: 1, backgroundColor: 'white'}}>
         <View style={{flex: 1, padding: 20}}>
           <TextField
