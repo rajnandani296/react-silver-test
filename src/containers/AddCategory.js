@@ -2,21 +2,32 @@
 // https://aboutreact.com/example-of-sqlite-database-in-react-native
 
 import React, {useEffect, useState} from 'react';
-import {Alert, SafeAreaView, View} from 'react-native';
+import {
+  Alert,
+  SafeAreaView,
+  View,
+  Image,
+  Text,
+  FlatList,
+  TouchableOpacity,
+} from 'react-native';
 import {openDatabase} from 'react-native-sqlite-storage';
 import Button from '../components/button/Button';
 import TextField from '../components/textField/TextField';
-import {Validations} from '../constants/Constants';
+
 import {Strings} from '../constants/Strings';
 import NavigationService from '../navigation/NavigationService';
 import {isUserName} from './../utils/Validate';
 
+import Validation from '../constants/Validation';
+import Images from '../constants/Images';
+import Colors from '../constants/Colors';
 var db = openDatabase({name: 'UserDatabase.db'});
 
 const AddCategory = ({props, navigation}) => {
   let [categoryName, setCategoryName] = useState('');
   let [isCategoryName, setIsCategoryName] = useState('');
-
+  let [flatListItems, setFlatListItems] = useState([]);
   let [inputUserId, setInputUserId] = useState('');
 
   useEffect(() => {
@@ -29,7 +40,7 @@ const AddCategory = ({props, navigation}) => {
           if (res.rows.length == 0) {
             txn.executeSql('DROP TABLE IF EXISTS table_category', []);
             txn.executeSql(
-              'CREATE TABLE IF NOT EXISTS table_category(category_id INTEGER PRIMARY KEY AUTOINCREMENT, category_name VARCHAR(20)',
+              'CREATE TABLE IF NOT EXISTS table_category(category_id INTEGER PRIMARY KEY AUTOINCREMENT, category_name VARCHAR(20))',
               [],
             );
           }
@@ -37,7 +48,18 @@ const AddCategory = ({props, navigation}) => {
       );
       Alert.alert('SQLite Database and Table Successfully Created...');
     });
+    getCategoryList();
   }, []);
+  const getCategoryList = () => {
+    db.transaction(tx => {
+      tx.executeSql('SELECT * FROM table_category', [], (tx, results) => {
+        var temp = [];
+        for (let i = 0; i < results.rows.length; ++i)
+          temp.push(results.rows.item(i));
+        setFlatListItems(temp);
+      });
+    });
+  };
 
   const onUserDetail = data => {
     setCategoryName(data.category_name);
@@ -45,9 +67,8 @@ const AddCategory = ({props, navigation}) => {
     setInputUserId(data.category_id);
   };
 
-  const onChangeTextFirstName = text => {
+  const onChangeCategoryName = text => {
     let [isValid, categoryName] = isUserName(text);
-    alert(isValid);
     setCategoryName(categoryName);
     setIsCategoryName(isValid);
   };
@@ -60,20 +81,9 @@ const AddCategory = ({props, navigation}) => {
         (tx, results) => {
           console.log('Results', results.rowsAffected);
           if (results.rowsAffected > 0) {
-            Alert.alert(
-              'Success',
-              'User updated successfully',
-              [
-                {
-                  text: 'Ok',
-                  onPress: () =>
-                    NavigationService.navigate('ContactList', {
-                      onUserDetail: onUserDetail,
-                    }),
-                },
-              ],
-              {cancelable: false},
-            );
+            setCategoryName('');
+            setInputUserId('');
+            getCategoryList();
           } else alert('Updation Failed');
         },
       );
@@ -87,29 +97,76 @@ const AddCategory = ({props, navigation}) => {
         (tx, results) => {
           console.log('Results', results.rowsAffected);
           if (results.rowsAffected > 0) {
-            Alert.alert(
-              'Success',
-              'You are Registered Successfully',
-              [
-                {
-                  text: 'Ok',
-                  onPress: () =>
-                    NavigationService.navigate('ContactList', {
-                      onUserDetail: onUserDetail,
-                    }),
-                },
-              ],
-              {cancelable: false},
-            );
+            setCategoryName('');
+            getCategoryList();
           } else alert('Registration Failed');
         },
       );
     });
   };
+  const onPressEdit = inputUserId => {
+    console.log(inputUserId);
+    db.transaction(tx => {
+      tx.executeSql(
+        'SELECT * FROM table_category where category_id = ?',
+        [inputUserId],
+        (tx, results) => {
+          var len = results.rows.length;
+          if (len > 0) {
+            let res = results.rows.item(0);
+            setCategoryName(res.category_name);
+            setInputUserId(res.category_id);
+          } else {
+            alert('No user found');
+            updateAllStates('', '', '');
+          }
+        },
+      );
+    });
+  };
+  const onDelete = inputUserId => {
+    db.transaction(tx => {
+      tx.executeSql(
+        'DELETE FROM  table_category where category_id=?',
+        [inputUserId],
+        (tx, results) => {
+          console.log('Results', results.rowsAffected);
+          if (results.rowsAffected > 0) {
+            Alert.alert(
+              'Success',
+              'User deleted successfully',
+              [
+                {
+                  text: 'Ok',
+                  onPress: () => getCategoryList(),
+                },
+              ],
+              {cancelable: false},
+            );
+          } else {
+            alert('Please insert a valid User Id');
+          }
+        },
+      );
+    });
+  };
+  const onPressDelete = inputUserId => {
+    Alert.alert(
+      'Alert',
+      'Are you sure you want to delte contact?',
+      [
+        {
+          text: 'Ok',
+          onPress: () => onDelete(inputUserId),
+        },
+      ],
+      {cancelable: false},
+    );
+  };
   const onPressAddCategory = () => {
     if (categoryName === '' || isCategoryName !== '') {
       setIsCategoryName(
-        categoryName === '' ? Validations.validName : isCategoryName,
+        categoryName === '' ? Validation.validName : isCategoryName,
       );
     } else {
       if (inputUserId) {
@@ -119,16 +176,56 @@ const AddCategory = ({props, navigation}) => {
       }
     }
   };
-
+  let listViewItemSeparator = () => {
+    return (
+      <View
+        style={{
+          height: 1,
+          width: '100%',
+          backgroundColor: Colors.DARK_CREAM,
+        }}
+      />
+    );
+  };
+  let listItemView = ({item, index}) => {
+    return (
+      <View
+        key={item.category_id}
+        style={{
+          backgroundColor: Colors.CREAM,
+          padding: 10,
+          flexDirection: 'row',
+          alignItems: 'center',
+        }}>
+        <View
+          style={{
+            flex: 1,
+            flexDirection: 'row',
+            alignItems: 'center',
+          }}>
+          <Text
+            style={{
+              paddingHorizontal: 10,
+            }}>{`${item.category_name}`}</Text>
+        </View>
+        <TouchableOpacity onPress={() => onPressEdit(item.category_id)}>
+          <Image style={{width: 20, height: 20}} source={Images.edit} />
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => onPressDelete(item.category_id)}>
+          <Image style={{width: 20, height: 20}} source={Images.delete} />
+        </TouchableOpacity>
+      </View>
+    );
+  };
   return (
     <SafeAreaView style={{flex: 1}}>
       <View style={{flex: 1, backgroundColor: 'white'}}>
         <View style={{flex: 1, padding: 20}}>
           <TextField
-            placeholder={Strings.categoryName}
+            placeholder={Strings.addCategory}
             value={categoryName}
             keyboardType={'name-phone-pad'}
-            onChange={onChangeTextFirstName}
+            onChange={onChangeCategoryName}
             returnKeyType={'next'}
             maxLength={50}
             errorText={isCategoryName}
@@ -144,6 +241,21 @@ const AddCategory = ({props, navigation}) => {
               flexDirection: 'row',
             }}>
             <Button onPress={onPressAddCategory} buttonText={Strings.save} />
+          </View>
+          <View style={{marginTop: 60}}>
+            <FlatList
+              data={flatListItems}
+              extraData={flatListItems}
+              ItemSeparatorComponent={listViewItemSeparator}
+              keyExtractor={(item, index) => index.toString()}
+              renderItem={listItemView}
+              bounces={false}
+              overScrollMode="never"
+              keyboardShouldPersistTaps="handled"
+              alwaysBounceVertical={false}
+              disableVirtualization={false}
+              showsVerticalScrollIndicator={false}
+            />
           </View>
         </View>
       </View>

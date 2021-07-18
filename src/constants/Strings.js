@@ -8,4 +8,5 @@ export const Strings = {
   save: 'Save',
   select: 'Select',
   okay: 'Ok',
+  addCategory: 'Add Category',
 };
