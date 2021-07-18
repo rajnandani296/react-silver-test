@@ -22,6 +22,7 @@ const Route = () => {
       initialRouteName="AddCategory">
       <Stack.Navigator headerMode="none">
         <Stack.Screen name="AddCategory" component={AddCategory} />
+        <Stack.Screen name="HomeScreen" component={HomeScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

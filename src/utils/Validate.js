@@ -129,7 +129,21 @@ export function isUserName(text) {
     return [isValid, user];
   }
 }
-
+export function isCategoryName(text) {
+  if (text === '') {
+    let isValid = Validation.validCategoryName;
+    let user = text;
+    return [isValid, user];
+  } else if (!isValidName(text)) {
+    let isValid = Validation.validCategoryFormat;
+    let user = text;
+    return [isValid, user];
+  } else {
+    let isValid = '';
+    let user = text;
+    return [isValid, user];
+  }
+}
 export function isUserFullName(text) {
   if (text === '') {
     let isValid = Validation.validName;

@@ -2,7 +2,7 @@
 // https://aboutreact.com/example-of-sqlite-database-in-react-native
 
 import React, {useEffect, useRef, useState} from 'react';
-import {SafeAreaView, View, Alert} from 'react-native';
+import {SafeAreaView, View, Alert, Keyboard} from 'react-native';
 import {openDatabase} from 'react-native-sqlite-storage';
 import Button from '../components/button/Button';
 import MediaSelectionAlertDialog from '../components/MediaSelectionAlertDialog';
@@ -13,7 +13,12 @@ import {Strings} from '../constants/Strings';
 import Validation from '../constants/Validation';
 import NavigationService from '../navigation/NavigationService';
 import {pickSingle, pickSingleWithCamera} from '../utils/Util';
-import {isUserEmail, isUserName, isUserNumber} from './../utils/Validate';
+import {
+  isCategoryName,
+  isUserEmail,
+  isUserName,
+  isUserNumber,
+} from './../utils/Validate';
 
 var db = openDatabase({name: 'UserDatabase.db'});
 const mediaArray = [
@@ -182,6 +187,7 @@ const HomeScreen = ({props, navigation}) => {
     });
   };
   const onPressAddContact = () => {
+    Keyboard.dismiss();
     if (
       email === '' ||
       firstName === '' ||
@@ -279,7 +285,7 @@ const HomeScreen = ({props, navigation}) => {
             autoCapitalize="none"
             keyboardType={'name-phone-pad'}
             onChange={onChangeTextEmail}
-            returnKeyType={'next'}
+            returnKeyType={'done'}
 
             // editable={isSocialSignUpType && email ? false : true}
           />

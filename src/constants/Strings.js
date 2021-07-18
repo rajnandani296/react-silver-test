@@ -9,4 +9,5 @@ export const Strings = {
   select: 'Select',
   okay: 'Ok',
   addCategory: 'Add Category',
+  somethingWentWrong: 'Something went wrong',
 };

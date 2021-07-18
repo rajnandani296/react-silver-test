@@ -10,6 +10,7 @@ import {
   Text,
   FlatList,
   TouchableOpacity,
+  Keyboard,
 } from 'react-native';
 import {openDatabase} from 'react-native-sqlite-storage';
 import Button from '../components/button/Button';
@@ -46,7 +47,6 @@ const AddCategory = ({props, navigation}) => {
           }
         },
       );
-      Alert.alert('SQLite Database and Table Successfully Created...');
     });
     getCategoryList();
   }, []);
@@ -68,7 +68,7 @@ const AddCategory = ({props, navigation}) => {
   };
 
   const onChangeCategoryName = text => {
-    let [isValid, categoryName] = isUserName(text);
+    let [isValid, categoryName] = isCategoryName(text);
     setCategoryName(categoryName);
     setIsCategoryName(isValid);
   };
@@ -99,7 +99,7 @@ const AddCategory = ({props, navigation}) => {
           if (results.rowsAffected > 0) {
             setCategoryName('');
             getCategoryList();
-          } else alert('Registration Failed');
+          } else alert(Strings.somethingWentWrong);
         },
       );
     });
@@ -117,8 +117,7 @@ const AddCategory = ({props, navigation}) => {
             setCategoryName(res.category_name);
             setInputUserId(res.category_id);
           } else {
-            alert('No user found');
-            updateAllStates('', '', '');
+            alert(Strings.somethingWentWrong);
           }
         },
       );
@@ -134,7 +133,7 @@ const AddCategory = ({props, navigation}) => {
           if (results.rowsAffected > 0) {
             Alert.alert(
               'Success',
-              'User deleted successfully',
+              'Category deleted successfully',
               [
                 {
                   text: 'Ok',
@@ -144,7 +143,7 @@ const AddCategory = ({props, navigation}) => {
               {cancelable: false},
             );
           } else {
-            alert('Please insert a valid User Id');
+            alert(Strings.somethingWentWrong);
           }
         },
       );
@@ -153,7 +152,7 @@ const AddCategory = ({props, navigation}) => {
   const onPressDelete = inputUserId => {
     Alert.alert(
       'Alert',
-      'Are you sure you want to delte contact?',
+      'Are you sure you want to delete category?',
       [
         {
           text: 'Ok',
@@ -164,9 +163,10 @@ const AddCategory = ({props, navigation}) => {
     );
   };
   const onPressAddCategory = () => {
+    Keyboard.dismiss();
     if (categoryName === '' || isCategoryName !== '') {
       setIsCategoryName(
-        categoryName === '' ? Validation.validName : isCategoryName,
+        categoryName === '' ? Validation.validCategoryName : isCategoryName,
       );
     } else {
       if (inputUserId) {
@@ -226,7 +226,7 @@ const AddCategory = ({props, navigation}) => {
             value={categoryName}
             keyboardType={'name-phone-pad'}
             onChange={onChangeCategoryName}
-            returnKeyType={'next'}
+            returnKeyType={'done'}
             maxLength={50}
             errorText={isCategoryName}
             // errorStyle={Styles.errorStyle}

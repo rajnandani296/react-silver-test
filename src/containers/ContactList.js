@@ -9,9 +9,9 @@ import {
   Alert,
 } from 'react-native';
 import {openDatabase} from 'react-native-sqlite-storage';
-import RoundShapeImage from '../components/RoundShapeImage';
 import Colors from '../constants/Colors';
 import Images from '../constants/Images';
+import {Strings} from '../constants/Strings';
 import NavigationService from '../navigation/NavigationService';
 
 var db = openDatabase({name: 'UserDatabase.db'});
@@ -46,8 +46,7 @@ const ContactList = ({navigation, route}) => {
             route.params.onUserDetail(res);
             NavigationService.goBack();
           } else {
-            alert('No user found');
-            updateAllStates('', '', '');
+            alert(Strings.somethingWentWrong);
           }
         },
       );
@@ -73,7 +72,7 @@ const ContactList = ({navigation, route}) => {
               {cancelable: false},
             );
           } else {
-            alert('Please insert a valid User Id');
+            alert(Strings.somethingWentWrong);
           }
         },
       );
