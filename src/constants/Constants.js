@@ -47,6 +47,7 @@ export default Constants = {
   HOUR_FORMAT: 'hh:mm A',
   DATE_TIME_OLDER_FORMAT: 'DD MMM, YYYY hh:mm A',
   DATE_FORMAT: 'YYYY-MM-DD',
+  RIGHT_MENU: 'RIGHT_MENU',
 };
 
 export const Validations = {
