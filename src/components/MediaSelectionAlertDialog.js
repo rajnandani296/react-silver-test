@@ -35,11 +35,11 @@ export default function MediaSelectionAlertDialog(props) {
     return (
       <TouchableOpacity
         onPress={() => {
-          onSelectMedia(index);
+          onSelectMedia(item.id);
         }}
         activeOpacity={Constants.TOUCH_OPACITY}
         style={Style.touchableStyle}>
-        <Text style={Style.listText}>{item.name}</Text>
+        <Text style={Style.listText}>{item.category_name}</Text>
       </TouchableOpacity>
     );
   };
@@ -108,7 +108,7 @@ const Style = StyleSheet.create({
     maxHeight: '75%',
   },
   titleView: {
-    backgroundColor: Colors.secondaryThemeColor,
+    backgroundColor: Colors.BUTTON_COLOR,
     height: 60,
     justifyContent: 'center',
   },

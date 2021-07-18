@@ -13,4 +13,6 @@ export const Strings = {
   createAndStoreCategory: 'Create and store category',
   addContact: 'Add Contact',
   contactList: 'ContactList',
+  category: 'Category',
+  selectCategory: 'Select Category',
 };

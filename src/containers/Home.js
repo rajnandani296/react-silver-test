@@ -2,7 +2,13 @@
 // https://aboutreact.com/example-of-sqlite-database-in-react-native
 
 import React, {useEffect, useRef, useState} from 'react';
-import {SafeAreaView, View, Alert, Keyboard} from 'react-native';
+import {
+  SafeAreaView,
+  View,
+  Alert,
+  Keyboard,
+  TouchableOpacity,
+} from 'react-native';
 import {openDatabase} from 'react-native-sqlite-storage';
 import Button from '../components/button/Button';
 import MediaSelectionAlertDialog from '../components/MediaSelectionAlertDialog';
@@ -24,13 +30,13 @@ import {
 var db = openDatabase({name: 'UserDatabase.db'});
 const mediaArray = [
   {
-    name: 'Camera',
-    id: 0,
+    category_name: 'Camera',
+    id: 1,
     checked: false,
   },
   {
-    name: 'Gallery',
-    id: 1,
+    category_name: 'Gallery',
+    id: 2,
     checked: false,
   },
 ];
@@ -43,11 +49,14 @@ const HomeScreen = ({props, navigation}) => {
   let [isLastName, setIsLastName] = useState('');
   let [mobile, setMobile] = useState('');
   let [isMobile, setIsMobile] = useState('');
+  let [isCategory, setIsCategory] = useState('');
   let [isDialogVisible, setDialogVisible] = useState(false);
+  let [isCategoryDialogVisible, setCategoryDialogVisible] = useState(false);
 
   let [inputUserId, setInputUserId] = useState('');
   let [imageUrl, setImageUrl] = useState('');
   let [category, setCategory] = useState('');
+  let [flatListItems, setFlatListItems] = useState([]);
   const mEmailRef = useRef();
   const mFirstnameRef = useRef();
   const mLastNameRef = useRef();
@@ -62,7 +71,7 @@ const HomeScreen = ({props, navigation}) => {
           if (res.rows.length == 0) {
             txn.executeSql('DROP TABLE IF EXISTS table_user', []);
             txn.executeSql(
-              'CREATE TABLE IF NOT EXISTS table_user(user_id INTEGER PRIMARY KEY AUTOINCREMENT, user_first_name VARCHAR(20), user_last_name VARCHAR(20), user_contact INT(10), user_address VARCHAR(255),imagem BLOB)',
+              'CREATE TABLE IF NOT EXISTS table_user(user_id INTEGER PRIMARY KEY AUTOINCREMENT, user_first_name VARCHAR(20), user_last_name VARCHAR(20), user_contact INT(10),user_category VARCHAR(255), user_address VARCHAR(255),imagem BLOB,)',
               [],
             );
           }
@@ -70,7 +79,14 @@ const HomeScreen = ({props, navigation}) => {
       );
     });
   }, []);
+  React.useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      getCategoryList();
+    });
 
+    // Return the function to unsubscribe from the event so it gets removed on unmount
+    return unsubscribe;
+  }, [navigation]);
   const onUserDetail = data => {
     setEmail(data.user_address);
     setFirstName(data.user_first_name);
@@ -107,12 +123,22 @@ const HomeScreen = ({props, navigation}) => {
     setDialogVisible(false);
     _imagePicker(index);
   };
-
+  const onSelectedCategorySelected = index => {
+    setCategoryDialogVisible(false);
+    flatListItems.map(item => {
+      if (item.id == index) {
+        setCategory(item.category_name);
+      }
+    });
+  };
+  const onCategoryCloseDialog = () => {
+    setCategoryDialogVisible(false);
+  };
   const onCloseDialog = () => {
     setDialogVisible(false);
   };
   const _imagePicker = name => {
-    if (name == '1') {
+    if (name == '2') {
       pickSingle(true).then(image => {
         if (image) {
           if (image.mime && image.mime == 'image/gif') {
@@ -122,7 +148,7 @@ const HomeScreen = ({props, navigation}) => {
           }
         }
       });
-    } else if (name == '0') {
+    } else if (name == '1') {
       pickSingleWithCamera(true).then(image => {
         if (image) {
           setImageUrl(image.path);
@@ -135,8 +161,8 @@ const HomeScreen = ({props, navigation}) => {
   const updateContact = () => {
     db.transaction(tx => {
       tx.executeSql(
-        'UPDATE table_user set user_first_name=?, user_last_name=?,user_contact=? , user_address=?,imagem=? where user_id=?',
-        [firstName, lastName, mobile, email, imageUrl, inputUserId],
+        'UPDATE table_user set user_first_name=?, user_last_name=?,user_contact=? , user_address=?,imagem=?, user_category =?where user_id=?',
+        [firstName, lastName, mobile, email, imageUrl, category, inputUserId],
         (tx, results) => {
           console.log('Results', results.rowsAffected);
           if (results.rowsAffected > 0) {
@@ -171,11 +197,21 @@ const HomeScreen = ({props, navigation}) => {
     setImageUrl('');
     setInputUserId('');
   };
+  const getCategoryList = () => {
+    db.transaction(tx => {
+      tx.executeSql('SELECT * FROM table_category', [], (tx, results) => {
+        var temp = [];
+        for (let i = 0; i < results.rows.length; ++i)
+          temp.push(results.rows.item(i));
+        setFlatListItems(temp);
+      });
+    });
+  };
   const addContact = () => {
     db.transaction(function (tx) {
       tx.executeSql(
-        'INSERT INTO table_user (user_first_name,user_last_name, user_contact, user_address,imagem) VALUES (?,?,?,?,?)',
-        [firstName, lastName, mobile, email, imageUrl],
+        'INSERT INTO table_user (user_first_name,user_last_name, user_contact, user_address,imagem,user_category) VALUES (?,?,?,?,?,?)',
+        [firstName, lastName, mobile, email, imageUrl, category],
         (tx, results) => {
           console.log('Results', results.rowsAffected);
           if (results.rowsAffected > 0) {
@@ -249,6 +285,9 @@ const HomeScreen = ({props, navigation}) => {
       </View>
     );
   };
+  const handleCategoryClick = () => {
+    setCategoryDialogVisible(true);
+  };
   return (
     <SafeAreaView style={{flex: 1}}>
       <Toolbar goToBack={toggleDrawer} leftTextName={Strings.addContact} />
@@ -310,6 +349,18 @@ const HomeScreen = ({props, navigation}) => {
 
             // editable={isSocialSignUpType && email ? false : true}
           />
+          <TouchableOpacity onPress={handleCategoryClick}>
+            <TextField
+              ref={mEmailRef}
+              placeholder={Strings.category}
+              value={category}
+              errorText={isCategory}
+              autoCapitalize="none"
+              keyboardType={'name-phone-pad'}
+              returnKeyType={'done'}
+              editable={false}
+            />
+          </TouchableOpacity>
           <View
             style={{
               justifyContent: 'center',
@@ -327,6 +378,14 @@ const HomeScreen = ({props, navigation}) => {
         onDateSelected={onSelectedMedia}
         buttonOneText={Strings.okay}
         dismiss={onCloseDialog}
+      />
+      <MediaSelectionAlertDialog
+        isModalVisible={isCategoryDialogVisible}
+        title={Strings.selectCategory}
+        dataArray={flatListItems}
+        onDateSelected={onSelectedCategorySelected}
+        buttonOneText={Strings.okay}
+        dismiss={onCategoryCloseDialog}
       />
     </SafeAreaView>
   );

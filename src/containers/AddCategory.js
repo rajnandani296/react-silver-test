@@ -42,7 +42,7 @@ const AddCategory = ({props, navigation}) => {
           if (res.rows.length == 0) {
             txn.executeSql('DROP TABLE IF EXISTS table_category', []);
             txn.executeSql(
-              'CREATE TABLE IF NOT EXISTS table_category(category_id INTEGER PRIMARY KEY AUTOINCREMENT, category_name VARCHAR(20))',
+              'CREATE TABLE IF NOT EXISTS table_category(id INTEGER PRIMARY KEY AUTOINCREMENT, category_name VARCHAR(20))',
               [],
             );
           }
@@ -65,7 +65,7 @@ const AddCategory = ({props, navigation}) => {
   const onUserDetail = data => {
     setCategoryName(data.category_name);
 
-    setInputUserId(data.category_id);
+    setInputUserId(data.id);
   };
 
   const onChangeCategoryName = text => {
@@ -77,7 +77,7 @@ const AddCategory = ({props, navigation}) => {
   const updateCategory = () => {
     db.transaction(tx => {
       tx.executeSql(
-        'UPDATE table_category set category_name=? where category_id=?',
+        'UPDATE table_category set category_name=? where id=?',
         [categoryName, inputUserId],
         (tx, results) => {
           console.log('Results', results.rowsAffected);
@@ -109,14 +109,14 @@ const AddCategory = ({props, navigation}) => {
     console.log(inputUserId);
     db.transaction(tx => {
       tx.executeSql(
-        'SELECT * FROM table_category where category_id = ?',
+        'SELECT * FROM table_category where id = ?',
         [inputUserId],
         (tx, results) => {
           var len = results.rows.length;
           if (len > 0) {
             let res = results.rows.item(0);
             setCategoryName(res.category_name);
-            setInputUserId(res.category_id);
+            setInputUserId(res.id);
           } else {
             alert(Strings.somethingWentWrong);
           }
@@ -127,7 +127,7 @@ const AddCategory = ({props, navigation}) => {
   const onDelete = inputUserId => {
     db.transaction(tx => {
       tx.executeSql(
-        'DELETE FROM  table_category where category_id=?',
+        'DELETE FROM  table_category where id=?',
         [inputUserId],
         (tx, results) => {
           console.log('Results', results.rowsAffected);
@@ -191,7 +191,7 @@ const AddCategory = ({props, navigation}) => {
   let listItemView = ({item, index}) => {
     return (
       <View
-        key={item.category_id}
+        key={item.id}
         style={{
           backgroundColor: Colors.CREAM,
           padding: 10,
@@ -209,10 +209,10 @@ const AddCategory = ({props, navigation}) => {
               paddingHorizontal: 10,
             }}>{`${item.category_name}`}</Text>
         </View>
-        <TouchableOpacity onPress={() => onPressEdit(item.category_id)}>
+        <TouchableOpacity onPress={() => onPressEdit(item.id)}>
           <Image style={{width: 20, height: 20}} source={Images.edit} />
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => onPressDelete(item.category_id)}>
+        <TouchableOpacity onPress={() => onPressDelete(item.id)}>
           <Image style={{width: 20, height: 20}} source={Images.delete} />
         </TouchableOpacity>
       </View>
