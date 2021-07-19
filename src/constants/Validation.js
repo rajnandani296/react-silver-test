@@ -13,4 +13,6 @@ export default Validations = {
   validMobileNumber: 'Please enter mobile number',
   validCategoryName: 'Please enter Category name',
   validCategoryFormat: 'Please enter valid Category',
+  validCategory: 'Please select category',
+  validProfileImage: 'Profile image is required',
 };

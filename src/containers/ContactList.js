@@ -146,10 +146,15 @@ const ContactList = ({navigation, route}) => {
           <Text
             style={{
               paddingHorizontal: 10,
+              flex: 1,
             }}>{`${item.user_first_name} ${item.user_last_name}`}</Text>
         </View>
+
         <TouchableOpacity onPress={() => onPressEdit(item.user_id)}>
-          <Image style={{width: 20, height: 20}} source={Images.edit} />
+          <Image
+            style={{width: 20, height: 20, marginLeft: 10}}
+            source={Images.edit}
+          />
         </TouchableOpacity>
         <TouchableOpacity onPress={() => onPressDelete(item.user_id)}>
           <Image style={{width: 20, height: 20}} source={Images.delete} />
@@ -157,7 +162,17 @@ const ContactList = ({navigation, route}) => {
       </View>
     );
   };
-
+  const renderEmptyView = () => {
+    return (
+      <Text
+        style={{
+          alignSelf: 'center',
+          marginTop: '80%',
+        }}>
+        {Strings.noDataFound}
+      </Text>
+    );
+  };
   return (
     <SafeAreaView style={{flex: 1}}>
       <View style={{flex: 1, backgroundColor: 'white'}}>
@@ -179,6 +194,7 @@ const ContactList = ({navigation, route}) => {
             alwaysBounceVertical={false}
             disableVirtualization={false}
             showsVerticalScrollIndicator={false}
+            ListEmptyComponent={renderEmptyView}
           />
         </View>
       </View>

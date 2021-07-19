@@ -10,6 +10,8 @@ import {
 import Colors from '../constants/Colors';
 import NavigationService from '../navigation/NavigationService';
 
+import {openDatabase} from 'react-native-sqlite-storage';
+var db = openDatabase({name: 'UserDatabase.db'});
 const routes = [
   {
     id: 6,

@@ -42,7 +42,7 @@ const AddCategory = ({props, navigation}) => {
           if (res.rows.length == 0) {
             txn.executeSql('DROP TABLE IF EXISTS table_category', []);
             txn.executeSql(
-              'CREATE TABLE IF NOT EXISTS table_category(id INTEGER PRIMARY KEY AUTOINCREMENT, category_name VARCHAR(20))',
+              'CREATE TABLE IF NOT EXISTS table_category(id INTEGER PRIMARY KEY AUTOINCREMENT, category_name VARCHAR(255))',
               [],
             );
           }

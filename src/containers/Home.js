@@ -71,7 +71,7 @@ const HomeScreen = ({props, navigation}) => {
           if (res.rows.length == 0) {
             txn.executeSql('DROP TABLE IF EXISTS table_user', []);
             txn.executeSql(
-              'CREATE TABLE IF NOT EXISTS table_user(user_id INTEGER PRIMARY KEY AUTOINCREMENT, user_first_name VARCHAR(20), user_last_name VARCHAR(20), user_contact INT(10),user_category VARCHAR(255), user_address VARCHAR(255),imagem BLOB,)',
+              'CREATE TABLE IF NOT EXISTS table_user(user_id INTEGER PRIMARY KEY AUTOINCREMENT, user_first_name VARCHAR(100), user_last_name VARCHAR(100), user_contact INT(10), user_address VARCHAR(255),imagem BLOB,user_cat VARCHAR(255))',
               [],
             );
           }
@@ -128,6 +128,7 @@ const HomeScreen = ({props, navigation}) => {
     flatListItems.map(item => {
       if (item.id == index) {
         setCategory(item.category_name);
+        setIsCategory('');
       }
     });
   };
@@ -161,7 +162,7 @@ const HomeScreen = ({props, navigation}) => {
   const updateContact = () => {
     db.transaction(tx => {
       tx.executeSql(
-        'UPDATE table_user set user_first_name=?, user_last_name=?,user_contact=? , user_address=?,imagem=?, user_category =?where user_id=?',
+        'UPDATE table_user set user_first_name=?, user_last_name=?,user_contact=? , user_address=?,imagem=?,user_cat=? where user_id=?',
         [firstName, lastName, mobile, email, imageUrl, category, inputUserId],
         (tx, results) => {
           console.log('Results', results.rowsAffected);
@@ -193,7 +194,7 @@ const HomeScreen = ({props, navigation}) => {
     setFirstName('');
     setLastName('');
     setMobile(``);
-
+    setCategory('');
     setImageUrl('');
     setInputUserId('');
   };
@@ -203,14 +204,30 @@ const HomeScreen = ({props, navigation}) => {
         var temp = [];
         for (let i = 0; i < results.rows.length; ++i)
           temp.push(results.rows.item(i));
-        setFlatListItems(temp);
+        if (temp && temp.length > 0) {
+          setFlatListItems(temp);
+        } else {
+          Alert.alert(
+            'Alert',
+            'Please Add category first',
+            [
+              {
+                text: 'Ok',
+                onPress: () => {
+                  NavigationService.navigate('AddCategory');
+                },
+              },
+            ],
+            {cancelable: false},
+          );
+        }
       });
     });
   };
   const addContact = () => {
     db.transaction(function (tx) {
       tx.executeSql(
-        'INSERT INTO table_user (user_first_name,user_last_name, user_contact, user_address,imagem,user_category) VALUES (?,?,?,?,?,?)',
+        'INSERT INTO table_user (user_first_name,user_last_name, user_contact, user_address,imagem,user_cat) VALUES (?,?,?,?,?,?)',
         [firstName, lastName, mobile, email, imageUrl, category],
         (tx, results) => {
           console.log('Results', results.rowsAffected);
@@ -246,12 +263,16 @@ const HomeScreen = ({props, navigation}) => {
       isEmail !== '' ||
       isFirstName !== '' ||
       isLastName !== '' ||
-      isMobile !== ''
+      isMobile !== '' ||
+      category == ''
     ) {
+      setIsCategory(Validations.validCategory);
       setIsEmail(email === '' ? Validations.validEmail : isEmail);
       setIsFirstName(firstName === '' ? Validations.validName : isFirstName);
       setIsLastName(lastName === '' ? Validations.validName : isLastName);
       setIsMobile(mobile === '' ? Validations.validMobileNumber : isMobile);
+    } else if (imageUrl == '') {
+      alert('Please select profile image');
     } else {
       if (inputUserId) {
         updateContact();
@@ -359,6 +380,7 @@ const HomeScreen = ({props, navigation}) => {
               keyboardType={'name-phone-pad'}
               returnKeyType={'done'}
               editable={false}
+              rightImageSource={Images.downarrow}
             />
           </TouchableOpacity>
           <View

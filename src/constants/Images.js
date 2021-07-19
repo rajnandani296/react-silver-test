@@ -5,6 +5,7 @@ const Images = {
   search: require('../assets/images/search.png'),
   menu512: require('../assets/images/menu512.png'),
   profile: require('../assets/images/profile.png'),
+  downarrow: require('../assets/images/downarrow.png'),
 };
 
 export default Images;

@@ -15,4 +15,5 @@ export const Strings = {
   contactList: 'ContactList',
   category: 'Category',
   selectCategory: 'Select Category',
+  noDataFound: 'No Data Found',
 };

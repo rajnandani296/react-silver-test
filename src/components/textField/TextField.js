@@ -69,10 +69,10 @@ export default class TextField extends PureComponent {
             autoFocus={this.props.autoFocus}
           />
 
-          {this.props.enableRightView && this.props.rightImageSource ? (
+          {this.props.rightImageSource ? (
             <View style={this.props.rightViewStyle}>
               <Image
-                style={this.props.rightImageStyle}
+                style={{width: 15, height: 15}}
                 source={this.props.rightImageSource}
                 resizeMode="contain"
               />
